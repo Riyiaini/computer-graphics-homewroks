@@ -1,5 +1,6 @@
 #include "rasterizer.h"
 #include <chrono>
+#include <thread>
 
 using namespace std;
 
@@ -13,6 +14,13 @@ namespace CGL {
     this->width = width;
     this->height = height;
     this->sample_rate = sample_rate;
+    switch (sample_rate)
+    {
+    case 4: this->rate = 2; break;
+    case 9: this->rate = 3; break;
+    case 16: this->rate = 4; break;
+    default: this->rate = 1;
+    }
 
     sample_buffer.resize(width * height * sample_rate, Color::White);
   }
@@ -24,7 +32,7 @@ namespace CGL {
     // It is sufficient to use the same color for all supersamples of a pixel for points and lines (not triangles)
 
 
-    sample_buffer[y * width + x] = c;
+    sample_buffer[y * width * rate + x] = c;
   }
 
   // Rasterize a point: simple example to help you start familiarizing
@@ -32,12 +40,12 @@ namespace CGL {
   //
   void RasterizerImp::rasterize_point(float x, float y, Color color) {
     // fill in the nearest pixel
-    int sx = (int)floor(x);
-    int sy = (int)floor(y);
+    int sx = (int)floor(x * rate);
+    int sy = (int)floor(y * rate);
 
     // check bounds
-    if (sx < 0 || sx >= width) return;
-    if (sy < 0 || sy >= height) return;
+    if (sx < 0 || sx >= width * rate) return;
+    if (sy < 0 || sy >= height * rate) return;
 
     fill_pixel(sx, sy, color);
     return;
@@ -73,7 +81,7 @@ namespace CGL {
     Color color) {
     // TODO: Task 1: Implement basic triangle rasterization here, no supersampling
 
-    // auto start = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
 
     /* solution 1 */
    /*  Vector2D v1{x2 - x1, y2 - y1};
@@ -101,14 +109,57 @@ namespace CGL {
     } */
 
     /* solution 2*/
+
+    if (sample_rate == 1) {
+
+      int miny = std::floor(std::min(std::min(y0, y1), y2));
+      int maxy = std::ceil(std::max(std::max(y0, y1), y2)); 
+
+      for (int y = miny; y <= maxy; y++) {
+        float minx = std::numeric_limits<float>::max();
+        float maxx = std::numeric_limits<float>::lowest();
+        bool found_intersection = false;
+        float y_m = y + 0.5;
+        if (y_m >= std::min(y0, y1) && y_m <= std::max(y0, y1) && y1 != y0) {
+          float x = (x0 * (y1 - y_m) + x1 * (y_m - y0)) / (y1 - y0);
+          minx = std::min(minx, x);
+          maxx = std::max(maxx, x);
+          found_intersection = true;
+        }
+        if (y_m >= std::min(y1, y2) && y_m <= std::max(y1, y2) && y2 != y1) {
+          float x = (x1 * (y2 - y_m) + x2 * (y_m - y1)) / (y2 - y1);
+          minx = std::min(minx, x);
+          maxx = std::max(maxx, x);
+          found_intersection = true;
+        }
+        if (y_m >= std::min(y2, y0) && y_m <= std::max(y2, y0) && y0 != y2) {
+          float x = (x2 * (y0 - y_m) + x0 * (y_m - y2)) / (y0 - y2);
+          minx = std::min(minx, x);
+          maxx = std::max(maxx, x);
+          found_intersection = true;
+        }
+        if (found_intersection) {
+          int start_x = std::round(minx);
+          int end_x = std::round(maxx);
+          for (int x = start_x; x < end_x; x++) {
+              rasterize_point(x, y, color);
+          }
+        }
+      }
+      return;
+    }
+
+    // TODO: Task 2: Update to implement super-sampled rasterization
+
     int miny = std::floor(std::min(std::min(y0, y1), y2));
     int maxy = std::ceil(std::max(std::max(y0, y1), y2)); 
+    float delta = 1.0f / rate;
 
-    for (int y = miny; y <= maxy; y++) {
+    for (float y = miny; y <= maxy; y+=delta) {
       float minx = std::numeric_limits<float>::max();
       float maxx = std::numeric_limits<float>::lowest();
       bool found_intersection = false;
-      float y_m = y + 0.5;
+      float y_m = y + delta / 2.0f;
       if (y_m >= std::min(y0, y1) && y_m <= std::max(y0, y1) && y1 != y0) {
         float x = (x0 * (y1 - y_m) + x1 * (y_m - y0)) / (y1 - y0);
         minx = std::min(minx, x);
@@ -128,17 +179,17 @@ namespace CGL {
         found_intersection = true;
       }
       if (found_intersection) {
-        int start_x = std::round(minx);
-        int end_x = std::round(maxx);
+        int start_x = std::round(minx * rate);
+        float end_x = std::round(maxx * rate);
         for (int x = start_x; x < end_x; x++) {
-            rasterize_point(x, y, color);
+            rasterize_point(static_cast<float>(x) / rate, y, color);
         }
       }
-    }
-    /* auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-    std::cout << "duration: " << duration << " ms" << std::endl; */
+    } 
 
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    std::cout << "duration: " << duration << " ms" << std::endl;
   }
 
 
@@ -172,9 +223,15 @@ namespace CGL {
     // TODO: Task 2: You may want to update this function for supersampling support
 
     this->sample_rate = rate;
+    switch (rate)
+    {
+    case 4: this->rate = 2; break;
+    case 9: this->rate = 3; break;
+    case 16: this->rate = 4; break;
+    default: this->rate = 1;
+    }
 
-
-    this->sample_buffer.resize(width * height, Color::White);
+    this->sample_buffer.resize(sample_rate * width * height, Color::White);
   }
 
 
@@ -188,7 +245,7 @@ namespace CGL {
     this->rgb_framebuffer_target = rgb_framebuffer;
 
 
-    this->sample_buffer.resize(width * height, Color::White);
+    this->sample_buffer.resize(sample_rate * width * height, Color::White);
   }
 
 
@@ -206,17 +263,39 @@ namespace CGL {
   void RasterizerImp::resolve_to_framebuffer() {
     // TODO: Task 2: You will likely want to update this function for supersampling support
 
+    if (rate == 1) {
+      for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y) {
+          Color col = sample_buffer[y * width + x];
 
-    for (int x = 0; x < width; ++x) {
-      for (int y = 0; y < height; ++y) {
-        Color col = sample_buffer[y * width + x];
-
-        for (int k = 0; k < 3; ++k) {
-          this->rgb_framebuffer_target[3 * (y * width + x) + k] = (&col.r)[k] * 255;
+          for (int k = 0; k < 3; ++k) {
+            this->rgb_framebuffer_target[3 * (y * width + x) + k] = (&col.r)[k] * 255;
+          }
         }
       }
     }
+    else if (rate > 1) {
+      for (int y = 0; y< height; ++y) {
+        for (int x = 0; x < width; ++x) {
+          Color cols[sample_rate];
+          for (int j = 0; j < rate; ++j) {
+            for (int i = 0; i < rate; ++i) {
+              cols[j * rate + i] = sample_buffer[(y * rate + j) * width * rate + x * rate + i];
+            }
+          }
 
+          for (int k = 0; k < 3; ++k) {
+            float r = 0.0f;
+            for (int j = 0; j < rate; ++j) {
+              for (int i = 0; i < rate; ++i) {
+                r += (&cols[j * rate + i].r)[k];
+              }
+            }
+            this->rgb_framebuffer_target[3 * (y * width + x) + k] = r / sample_rate * 255.0f ;
+          }
+        }
+      }
+    }
   }
 
   bool RasterizerImp::inside_triangle(float x0, float y0,
@@ -240,7 +319,6 @@ namespace CGL {
 
     return true;
   }
-
 
   Rasterizer::~Rasterizer() { }
 

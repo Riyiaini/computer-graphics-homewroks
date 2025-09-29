@@ -61,6 +61,7 @@ namespace CGL {
   private:
     // The total number of samples
     unsigned int sample_rate;
+    unsigned int rate;
 
     // Constants indicating which sampling methods are used
     PixelSampleMethod psm;
@@ -142,6 +143,5 @@ namespace CGL {
       float x2, float y2,
       float px, float py);
   };
-
 
 }
