@@ -8,6 +8,20 @@
 
 namespace CGL {
 
+  struct Coords {
+    float alpha;
+    float beta;
+    float gamma;
+  };
+
+  struct Coords_computer {
+    float x0, y0;
+    float d00, d01, d11, denom;
+    Vector2D v0, v1;
+    void get_denom(float x0, float y0, float x1, float y1, float x2, float y2);
+    Coords compute_coords(float x, float y);
+  };
+
   class Rasterizer {
   public:
     virtual ~Rasterizer() = 0;
@@ -89,6 +103,8 @@ namespace CGL {
     // Rasterize a point
     // P0 = (x, y)
     void rasterize_point(float x, float y, Color color);
+    void rasterize_pixel(float x, float y, Color color, bool buffer[]);
+    void rasterize_pixel(float x, float y, Color colors[], bool buffer[]);
 
     // Rasterize a line
     // From P0 = (x0, y0)
@@ -124,6 +140,8 @@ namespace CGL {
 
     // Fill a pixel, which may contain multiple samples
     void fill_pixel(size_t x, size_t y, Color c);
+    void fill_pixel(size_t x, size_t y, Color c, bool buffer[]);
+    void fill_pixel(size_t x, size_t y, Color colors[], bool buffer[]);
 
     // This function sets the framebuffer target.  The block of memory
     // for the framebuffer contains 3 * width * height values for an RGB
@@ -138,10 +156,8 @@ namespace CGL {
     // in preparation for posting pixels to the screen.
     virtual void resolve_to_framebuffer();
 
-    bool inside_triangle(float x0, float y0,
-      float x1, float y1,
-      float x2, float y2,
-      float px, float py);
-  };
+    bool find_intersection(float y_m, float x0, float y0, float x1, float y1,
+      float x2, float y2, float &minx, float &maxx);
 
+  };
 }

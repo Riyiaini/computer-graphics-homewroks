@@ -46,7 +46,10 @@ class DrawRend : public Renderer {
   // view transform functions
   void view_init();
   void set_view(float x, float y, float span);
+  void set_view_unchanged(float x, float y, float span);
   void move_view(float dx, float dy, float scale);
+
+  void rotate_view(float deg);
 
   Rasterizer * software_rasterizer;
 

@@ -228,6 +228,16 @@ void DrawRend::keyboard_event(int key, int event, unsigned char mods) {
     show_zoom = (show_zoom + 1) % 2;
     break;
 
+  case GLFW_KEY_LEFT:
+    rotate_view(-1);
+    redraw();
+    break;
+    
+  case GLFW_KEY_RIGHT:
+    rotate_view(1);
+    redraw();
+    break;
+
   default:
     return;
   }
@@ -444,6 +454,13 @@ void DrawRend::view_init() {
  */
 void DrawRend::set_view(float x, float y, float span) {
   svg_to_ndc[current_svg] = Matrix3x3(1, 0, -x + span, 0, 1, -y + span, 0, 0, 2 * span);
+  view_x = x; view_y = y; view_span = span;
+}
+
+void DrawRend::set_view_unchanged(float x, float y, float span) {
+  svg_to_ndc[current_svg](0, 2) = -x + span;
+  svg_to_ndc[current_svg](1, 2) = -y + span;
+  svg_to_ndc[current_svg](2, 2) = 2 * span;
 }
 
 /**
@@ -451,10 +468,16 @@ void DrawRend::set_view(float x, float y, float span) {
  * then shifts and zooms the viewing window by setting a new view matrix.
  */
 void DrawRend::move_view(float dx, float dy, float zoom) {
-  Matrix3x3& m = svg_to_ndc[current_svg];
-  float span = m(2, 2) / 2.;
-  float x = span - m(0, 2), y = span - m(1, 2);
-  set_view(x - dx, y - dy, span * zoom);
+  Matrix3x3 m = svg_to_ndc[current_svg];
+  float span = m(2, 2) / 2.0f;
+  float x = span - m(0, 2);
+  float y = span - m(1, 2);
+  set_view_unchanged(x - dx, y - dy, span * zoom);
+}
+
+void DrawRend::rotate_view(float deg) {
+  Matrix3x3 rm = rotate(deg, view_x, view_y);
+  svg_to_ndc[current_svg] = svg_to_ndc[current_svg] * rm;
 }
 
 }

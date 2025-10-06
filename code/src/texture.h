@@ -19,6 +19,7 @@ struct SampleParams {
   Vector2D p_dx_uv, p_dy_uv;
   PixelSampleMethod psm;
   LevelSampleMethod lsm;
+  int rate;
 };
 
 static const int kMaxMipLevels = 14;

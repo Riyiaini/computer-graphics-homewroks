@@ -180,19 +180,7 @@ struct SVG {
   
 
   void draw(Rasterizer*dr, Matrix3x3 global_transform) {
-    // auto start = std::chrono::high_resolution_clock::now();
-    /* std::vector<std::thread> pool;
-    for (int i = 0; i < elements.size(); ++i) {
-
-      pool.emplace_back([this](int i, Rasterizer*dr, Matrix3x3 global_transform){
-        elements[i]->draw(dr, global_transform);
-      }, i, dr, global_transform);
-
-    }
-
-    for (auto &t : pool) {
-      t.join();
-    } */
+    //auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < elements.size(); ++i) {
       elements[i]->draw(dr, global_transform);
     }

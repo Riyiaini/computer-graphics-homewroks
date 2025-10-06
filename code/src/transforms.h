@@ -9,7 +9,7 @@ Vector2D operator*(const Matrix3x3 &m, const Vector2D &v);
 Matrix3x3 translate(float dx, float dy);
 Matrix3x3 scale(float sx, float sy);
 Matrix3x3 rotate(float deg);
-
+Matrix3x3 rotate(float deg, float x, float y);
 }
 
 
