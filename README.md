@@ -1,6 +1,6 @@
-<span style="font-size: 32px">Fall2025福州大学计算机图形学作业</span>  
+#Fall2025福州大学计算机图形学作业  
 
-<img src="code/img/cover.jpg" alt="BusTub Logo" height="200">  
+<img src="code/img/cover.jpg" alt="BusTub Logo" height="400">  
 
 ## 作业结构
 本次作业包括6个部分，覆盖了第 2-6 讲的内容。
