@@ -12,13 +12,13 @@
 
 ## 如何运⾏可执⾏⽂件
 本作业代码编译后⽣成可执⾏⽂件 draw ，你可以运⾏如下命令启动程序：  
-`./draw [path to svg file/folder to render]`
+`./draw [path to svg file/folder to render]`  
 运⾏时需要指定载⼊的svg⽂件路径。我们提供了若⼲个svg⽂件，例如你可运⾏:  
 `./draw ../svg/basic/test1.svg`
 
 ## 快捷键
 | 键 | 功能 |
-| :--- | ：---: |
+| :--- | :---: |
 | space | 返回初始视角 |
 | - | 降低采样率 |
 | = | 提高采样率 |
