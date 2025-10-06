@@ -1,4 +1,4 @@
-#Fall2025福州大学计算机图形学作业  
+# Fall2025福州大学计算机图形学作业  
 
 <img src="code/img/cover.jpg" alt="BusTub Logo" height="400">  
 
