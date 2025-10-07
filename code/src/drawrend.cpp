@@ -229,12 +229,12 @@ void DrawRend::keyboard_event(int key, int event, unsigned char mods) {
     break;
 
   case GLFW_KEY_LEFT:
-    rotate_view(-1);
+    rotate_view(-2);
     redraw();
     break;
     
   case GLFW_KEY_RIGHT:
-    rotate_view(1);
+    rotate_view(2);
     redraw();
     break;
 

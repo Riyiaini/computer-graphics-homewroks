@@ -1,6 +1,7 @@
 #include "rasterizer.h"
 #include <chrono>
 #include "texture.h"
+#include <immintrin.h>
 
 using namespace std;
 
@@ -104,7 +105,6 @@ namespace CGL
 
   void RasterizerImp::fill_pixel(size_t x, size_t y, Color c, bool buffer[])
   {
-
     int pixel_index = y * width + x;
     int pixel_offset = pixel_index * sample_rate;
 
@@ -314,25 +314,12 @@ namespace CGL
           for (int i = 0; i < rate; i++)
           {
             float startx = start_x[i], endx = end_x[i];
-            if (startx > pixel_x + 1 - half_delta || endx <= pixel_x + half_delta)
+
+            int start = std::max(0, (int)(std::floor((startx - pixel_x - half_delta) * rate)) + 1);
+            int end = std::min((int)rate, (int)(std::floor((endx - pixel_x - half_delta) * rate)) + 1);
+            for (int j = start; j < end; j++)
             {
-              continue;
-            }
-            if (startx <= pixel_x + half_delta && endx > pixel_x + 1 - half_delta)
-            {
-              for (int j = 0; j < rate; j++)
-              {
-                buffer[i * rate + j] = true;
-              }
-            }
-            else
-            {
-              int start = std::max(0, (int)(std::floor((startx - pixel_x - half_delta) * rate)) + 1);
-              int end = std::min((int)rate, (int)(std::floor((endx - pixel_x - half_delta) * rate)) + 1);
-              for (int j = start; j < end; j++)
-              {
-                buffer[i * rate + j] = true;
-              }
+              buffer[i * rate + j] = true;
             }
           }
           rasterize_pixel(pixel_x, pixel_y, color, buffer);
@@ -351,26 +338,14 @@ namespace CGL
           for (int i = 0; i < rate; i++)
           {
             float startx = start_x[i], endx = end_x[i];
-            if (startx > pixel_x + 1 - half_delta || endx <= pixel_x + half_delta)
+
+            int start = std::max(0, (int)(std::floor((startx - pixel_x - half_delta) * rate)) + 1);
+            int end = std::min((int)rate, (int)(std::floor((endx - pixel_x - half_delta) * rate)) + 1);
+            for (int j = start; j < end; j++)
             {
-              continue;
+              buffer[i * rate + j] = true;
             }
-            if (startx <= pixel_x + half_delta && endx > pixel_x + 1 - half_delta)
-            {
-              for (int j = 0; j < rate; j++)
-              {
-                buffer[i * rate + j] = true;
-              }
-            }
-            else
-            {
-              int start = std::max(0, (int)(std::floor((startx - pixel_x - half_delta) * rate)) + 1);
-              int end = std::min((int)rate, (int)(std::floor((endx - pixel_x - half_delta) * rate)) + 1);
-              for (int j = start; j < end; j++)
-              {
-                buffer[i * rate + j] = true;
-              }
-            }
+            
           }
           rasterize_pixel(pixel_x, pixel_y, color, buffer);
         }
@@ -464,30 +439,16 @@ namespace CGL
           for (int i = 0; i < rate; i++)
           {
             float startx = start_x[i], endx = end_x[i];
-            if (startx > pixel_x + 1 - half_delta || endx <= pixel_x + half_delta)
+
+            int start = std::max(0, (int)(std::floor((startx - pixel_x - half_delta) * rate)) + 1);
+            int end = std::min((int)rate, (int)(std::floor((endx - pixel_x - half_delta) * rate)) + 1);
+            for (int j = start; j < end; j++)
             {
-              continue;
+              buffer[i * rate + j] = true;
+              Coords coords = cct.compute_coords(pixel_x + j * delta + half_delta, pixel_y + i * delta + half_delta);
+              colors[i * rate + j] = c0 * coords.alpha + c1 * coords.beta + c2 * coords.gamma;
             }
-            if (startx <= pixel_x + half_delta && endx > pixel_x + 1 - half_delta)
-            {
-              for (int j = 0; j < rate; j++)
-              {
-                buffer[i * rate + j] = true;
-                Coords coords = cct.compute_coords(pixel_x + j * delta + half_delta, pixel_y + i * delta + half_delta);
-                colors[i * rate + j] = c0 * coords.alpha + c1 * coords.beta + c2 * coords.gamma;
-              }
-            }
-            else
-            {
-              int start = std::max(0, (int)(std::floor((startx - pixel_x - half_delta) * rate)) + 1);
-              int end = std::min((int)rate, (int)(std::floor((endx - pixel_x - half_delta) * rate)) + 1);
-              for (int j = start; j < end; j++)
-              {
-                buffer[i * rate + j] = true;
-                Coords coords = cct.compute_coords(pixel_x + j * delta + half_delta, pixel_y + i * delta + half_delta);
-                colors[i * rate + j] = c0 * coords.alpha + c1 * coords.beta + c2 * coords.gamma;
-              }
-            }
+            
           }
           rasterize_pixel(pixel_x, pixel_y, colors, buffer);
         }
@@ -516,30 +477,16 @@ namespace CGL
           for (int i = 0; i < rate; i++)
           {
             float startx = start_x[i], endx = end_x[i];
-            if (startx > pixel_x + 1 - half_delta || endx <= pixel_x + half_delta)
+
+            int start = std::max(0, (int)(std::floor((startx - pixel_x - half_delta) * rate)) + 1);
+            int end = std::min((int)rate, (int)(std::floor((endx - pixel_x - half_delta) * rate)) + 1);
+            for (int j = start; j < end; j++)
             {
-              continue;
+              buffer[i * rate + j] = true;
+              Coords coords = cct.compute_coords(pixel_x + j * delta + half_delta, pixel_y + i * delta + half_delta);
+              colors[i * rate + j] = c0 * coords.alpha + c1 * coords.beta + c2 * coords.gamma;
             }
-            if (startx <= pixel_x + half_delta && endx > pixel_x + 1 - half_delta)
-            {
-              for (int j = 0; j < rate; j++)
-              {
-                buffer[i * rate + j] = true;
-                Coords coords = cct.compute_coords(pixel_x + j * delta + half_delta, pixel_y + i * delta + half_delta);
-                colors[i * rate + j] = c0 * coords.alpha + c1 * coords.beta + c2 * coords.gamma;
-              }
-            }
-            else
-            {
-              int start = std::max(0, (int)(std::floor((startx - pixel_x - half_delta) * rate)) + 1);
-              int end = std::min((int)rate, (int)(std::floor((endx - pixel_x - half_delta) * rate)) + 1);
-              for (int j = start; j < end; j++)
-              {
-                buffer[i * rate + j] = true;
-                Coords coords = cct.compute_coords(pixel_x + j * delta + half_delta, pixel_y + i * delta + half_delta);
-                colors[i * rate + j] = c0 * coords.alpha + c1 * coords.beta + c2 * coords.gamma;
-              }
-            }
+
           }
           rasterize_pixel(pixel_x, pixel_y, colors, buffer);
         }
@@ -693,85 +640,40 @@ namespace CGL
           for (int i = 0; i < rate; i++)
           {
             float startx = start_x[i], endx = end_x[i];
-            if (startx > pixel_x + 1 - half_delta || endx <= pixel_x + half_delta)
+            int start = std::max(0, (int)(std::floor((startx - pixel_x - half_delta) * rate)) + 1);
+            int end = std::min((int)rate, (int)(std::floor((endx - pixel_x - half_delta) * rate)) + 1);
+            for (int j = start; j < end; j++)
             {
-              continue;
-            }
-            if (startx <= pixel_x + half_delta && endx > pixel_x + 1 - half_delta)
-            {
-              for (int j = 0; j < rate; j++)
+              buffer[i * rate + j] = true;
+              int base_index = i * (rate + 1) + j;
+              int indices[3] = {
+                  base_index,                  // current
+                  base_index + 1,              // right
+                  base_index + ((int)rate + 1) // down
+              };
+              for (int k = 0; k < 3; k++)
               {
-                buffer[i * rate + j] = true;
-                int base_index = i * (rate + 1) + j;
-                int indices[3] = {
-                    base_index,                  // current
-                    base_index + 1,              // right
-                    base_index + ((int)rate + 1) // down
-                };
-                for (int k = 0; k < 3; k++)
+                if (filled_buffer[indices[k]])
                 {
-                  if (filled_buffer[indices[k]])
-                  {
-                    continue;
-                  }
-                  float xx = pixel_x + j * delta + half_delta + (k == 1 ? delta : 0);
-                  float yy = pixel_y + i * delta + half_delta + (k == 2 ? delta : 0);
-                  Coords coords = cct.compute_coords(xx, yy);
-                  Vector2D uv;
-                  uv.x = coords.alpha * u0 + coords.beta * u1 + coords.gamma * u2;
-                  uv.y = coords.alpha * v0 + coords.beta * v1 + coords.gamma * v2;
-                  uv_buffer[indices[k]] = uv;
-                  filled_buffer[indices[k]] = true;
+                  continue;
                 }
-                SampleParams params;
-                params.psm = psm;
-                params.lsm = lsm;
-                params.p_uv = uv_buffer[indices[0]];
-                params.p_dx_uv = uv_buffer[indices[1]];
-                params.p_dy_uv = uv_buffer[indices[2]];
-                params.rate = rate;
-
-                colors[i * rate + j] = tex.sample(params);
+                float xx = pixel_x + j * delta + half_delta + (k == 1 ? delta : 0);
+                float yy = pixel_y + i * delta + half_delta + (k == 2 ? delta : 0);
+                Coords coords = cct.compute_coords(xx, yy);
+                Vector2D uv;
+                uv.x = coords.alpha * u0 + coords.beta * u1 + coords.gamma * u2;
+                uv.y = coords.alpha * v0 + coords.beta * v1 + coords.gamma * v2;
+                uv_buffer[indices[k]] = uv;
+                filled_buffer[indices[k]] = true;
               }
-            }
-            else
-            {
-              int start = std::max(0, (int)(std::floor((startx - pixel_x - half_delta) * rate)) + 1);
-              int end = std::min((int)rate, (int)(std::floor((endx - pixel_x - half_delta) * rate)) + 1);
-              for (int j = start; j < end; j++)
-              {
-                buffer[i * rate + j] = true;
-                int base_index = i * (rate + 1) + j;
-                int indices[3] = {
-                    base_index,                  // current
-                    base_index + 1,              // right
-                    base_index + ((int)rate + 1) // down
-                };
-                for (int k = 0; k < 3; k++)
-                {
-                  if (filled_buffer[indices[k]])
-                  {
-                    continue;
-                  }
-                  float xx = pixel_x + j * delta + half_delta + (k == 1 ? delta : 0);
-                  float yy = pixel_y + i * delta + half_delta + (k == 2 ? delta : 0);
-                  Coords coords = cct.compute_coords(xx, yy);
-                  Vector2D uv;
-                  uv.x = coords.alpha * u0 + coords.beta * u1 + coords.gamma * u2;
-                  uv.y = coords.alpha * v0 + coords.beta * v1 + coords.gamma * v2;
-                  uv_buffer[indices[k]] = uv;
-                  filled_buffer[indices[k]] = true;
-                }
-                SampleParams params;
-                params.psm = psm;
-                params.lsm = lsm;
-                params.p_uv = uv_buffer[indices[0]];
-                params.p_dx_uv = uv_buffer[indices[1]];
-                params.p_dy_uv = uv_buffer[indices[2]];
-                params.rate = rate;
-
-                colors[i * rate + j] = tex.sample(params);
-              }
+              SampleParams params;
+              params.psm = psm;
+              params.lsm = lsm;
+              params.p_uv = uv_buffer[indices[0]];
+              params.p_dx_uv = uv_buffer[indices[1]];
+              params.p_dy_uv = uv_buffer[indices[2]];
+              params.rate = rate;
+              colors[i * rate + j] = tex.sample(params);
             }
           }
           rasterize_pixel(pixel_x, pixel_y, colors, buffer);
@@ -787,7 +689,6 @@ namespace CGL
           {
             for (int j = 0; j < rate; ++j)
             {
-
               int base_index = i * (rate + 1) + j;
               int indices[3] = {
                   base_index,                  // current
@@ -837,85 +738,41 @@ namespace CGL
           for (int i = 0; i < rate; i++)
           {
             float startx = start_x[i], endx = end_x[i];
-            if (startx > pixel_x + 1 - half_delta || endx <= pixel_x + half_delta)
+  
+            int start = std::max(0, (int)(std::floor((startx - pixel_x - half_delta) * rate)) + 1);
+            int end = std::min((int)rate, (int)(std::floor((endx - pixel_x - half_delta) * rate)) + 1);
+            for (int j = start; j < end; j++)
             {
-              continue;
-            }
-            if (startx <= pixel_x + half_delta && endx > pixel_x + 1 - half_delta)
-            {
-              for (int j = 0; j < rate; j++)
+              buffer[i * rate + j] = true;
+              int base_index = i * (rate + 1) + j;
+              int indices[3] = {
+                  base_index,                  // current
+                  base_index + 1,              // right
+                  base_index + ((int)rate + 1) // down
+              };
+              for (int k = 0; k < 3; k++)
               {
-                buffer[i * rate + j] = true;
-                int base_index = i * (rate + 1) + j;
-                int indices[3] = {
-                    base_index,                  // current
-                    base_index + 1,              // right
-                    base_index + ((int)rate + 1) // down
-                };
-                for (int k = 0; k < 3; k++)
+                if (filled_buffer[indices[k]])
                 {
-                  if (filled_buffer[indices[k]])
-                  {
-                    continue;
-                  }
-                  float xx = pixel_x + j * delta + half_delta + (k == 1 ? delta : 0);
-                  float yy = pixel_y + i * delta + half_delta + (k == 2 ? delta : 0);
-                  Coords coords = cct.compute_coords(xx, yy);
-                  Vector2D uv;
-                  uv.x = coords.alpha * u0 + coords.beta * u1 + coords.gamma * u2;
-                  uv.y = coords.alpha * v0 + coords.beta * v1 + coords.gamma * v2;
-                  uv_buffer[indices[k]] = uv;
-                  filled_buffer[indices[k]] = true;
+                  continue;
                 }
-                SampleParams params;
-                params.psm = psm;
-                params.lsm = lsm;
-                params.p_uv = uv_buffer[indices[0]];
-                params.p_dx_uv = uv_buffer[indices[1]];
-                params.p_dy_uv = uv_buffer[indices[2]];
-                params.rate = rate;
-
-                colors[i * rate + j] = tex.sample(params);
+                float xx = pixel_x + j * delta + half_delta + (k == 1 ? delta : 0);
+                float yy = pixel_y + i * delta + half_delta + (k == 2 ? delta : 0);
+                Coords coords = cct.compute_coords(xx, yy);
+                Vector2D uv;
+                uv.x = coords.alpha * u0 + coords.beta * u1 + coords.gamma * u2;
+                uv.y = coords.alpha * v0 + coords.beta * v1 + coords.gamma * v2;
+                uv_buffer[indices[k]] = uv;
+                filled_buffer[indices[k]] = true;
               }
-            }
-            else
-            {
-              int start = std::max(0, (int)(std::floor((startx - pixel_x - half_delta) * rate)) + 1);
-              int end = std::min((int)rate, (int)(std::floor((endx - pixel_x - half_delta) * rate)) + 1);
-              for (int j = start; j < end; j++)
-              {
-                buffer[i * rate + j] = true;
-                int base_index = i * (rate + 1) + j;
-                int indices[3] = {
-                    base_index,                  // current
-                    base_index + 1,              // right
-                    base_index + ((int)rate + 1) // down
-                };
-                for (int k = 0; k < 3; k++)
-                {
-                  if (filled_buffer[indices[k]])
-                  {
-                    continue;
-                  }
-                  float xx = pixel_x + j * delta + half_delta + (k == 1 ? delta : 0);
-                  float yy = pixel_y + i * delta + half_delta + (k == 2 ? delta : 0);
-                  Coords coords = cct.compute_coords(xx, yy);
-                  Vector2D uv;
-                  uv.x = coords.alpha * u0 + coords.beta * u1 + coords.gamma * u2;
-                  uv.y = coords.alpha * v0 + coords.beta * v1 + coords.gamma * v2;
-                  uv_buffer[indices[k]] = uv;
-                  filled_buffer[indices[k]] = true;
-                }
-                SampleParams params;
-                params.psm = psm;
-                params.lsm = lsm;
-                params.p_uv = uv_buffer[indices[0]];
-                params.p_dx_uv = uv_buffer[indices[1]];
-                params.p_dy_uv = uv_buffer[indices[2]];
-                params.rate = rate;
-
-                colors[i * rate + j] = tex.sample(params);
-              }
+              SampleParams params;
+              params.psm = psm;
+              params.lsm = lsm;
+              params.p_uv = uv_buffer[indices[0]];
+              params.p_dx_uv = uv_buffer[indices[1]];
+              params.p_dy_uv = uv_buffer[indices[2]];
+              params.rate = rate;
+              colors[i * rate + j] = tex.sample(params);
             }
           }
           rasterize_pixel(pixel_x, pixel_y, colors, buffer);
@@ -976,7 +833,7 @@ namespace CGL
   void RasterizerImp::resolve_to_framebuffer()
   {
     // TODO: Task 2: You will likely want to update this function for supersampling support
-    // auto start = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
 
     int BLOCKSIZE = 4; // blocking to impove cache hit rate
 
@@ -1038,9 +895,9 @@ namespace CGL
       }
     }
 
-    /* auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-    std::cout << "resolve duration: " << duration << " ms" << std::endl; */
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    std::cout << "resolve duration: " << duration << " ms" << std::endl;
   }
 
   bool RasterizerImp::find_intersection(float y_m, float x0, float y0, float x1, float y1, float x2, float y2, float &minx, float &maxx)
